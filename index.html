@@ -205,6 +205,10 @@ textarea.ans,.fin-form input,.ask-out{-webkit-user-select:text; user-select:text
 .paneb{display:none; flex:none; border:1.5px solid var(--accent); background:var(--surface); color:var(--accent); border-radius:999px; padding:3px 10px; font-size:.78rem; font-weight:700; cursor:pointer}
 @media (min-width:901px){ .paneb{display:none} }
 
+.keepbox{display:flex; flex-direction:column; gap:6px; margin-top:10px; padding:12px; border:2px solid var(--warn); border-radius:12px}
+.keepbox[hidden]{display:none}
+.btn.keepbtn{background:var(--warn); color:var(--warn-bg); border-color:var(--warn); font-weight:700; font-size:1.02rem; padding:12px 16px; width:100%}
+
 </style>
 </head><body>
 <div id="app"></div>
@@ -730,14 +734,13 @@ function buildCard(q, j){
   var att = el("span", "att");
   actions.appendChild(chk); actions.appendChild(hintB); actions.appendChild(att);
   root.appendChild(actions);
+  var keepRow = el("div", "keepbox"); keepRow.hidden = true; root.appendChild(keepRow);
 
   var hintBox = el("div", "hint-box"); hintBox.hidden = true; hintBox.setAttribute("aria-live", "polite"); root.appendChild(hintBox);
   var fb = el("div", "fb"); fb.hidden = true; fb.setAttribute("aria-live", "polite"); root.appendChild(fb);
   var markline = el("div", "markline"); markline.hidden = true; root.appendChild(markline);
-  var keepRow = el("div", "btnrow"); keepRow.hidden = true;
-  var keep = el("button", "btn warnb", "Keep this answer and move on"); keep.type = "button";
+  var keep = el("button", "btn keepbtn", "Keep my best answer and move on"); keep.type = "button";
   keepRow.appendChild(keep); keepRow.appendChild(el("span", "hintnote", "The correct answer is not shown if you move on. Or fix your answer and check again (up to " + MAXTRY + " tries)."));
-  root.appendChild(keepRow);
   var model = el("div", "fb"); model.hidden = true; root.appendChild(model);
 
   var ask = el("div", "ask"); ask.hidden = true;
@@ -791,7 +794,7 @@ function renderFeedback(c, res){
 }
 function renderKeep(c){
   var s = S[pid].qs[c.i];
-  var ok = s.status === "active" && s.cur && !s.cur.full && s.lastRaw === c.ta.value.trim();
+  var ok = s.status === "active" && s.cur && !s.cur.full;
   c.keepRow.hidden = !ok;
   if(ok) c.keep.textContent = "Keep my best answer and move on (" + fmt(s.res.score) + "/" + c.q.marks + ")";
 }
@@ -901,7 +904,7 @@ function onCheck(c){
 }
 function onKeep(c){
   var s = S[pid].qs[c.i];
-  if(!s.cur || s.lastRaw !== c.ta.value.trim()) return;
+  if(!s.cur) return;
   finishQ(c, "kept");
 }
 function finishQ(c, how){
